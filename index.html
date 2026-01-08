@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediConnect | Modern Healthcare Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #0ea5e9;
+            --success: #10b981;
+            --bg: #fdfeff;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #f1f5f9;
+            --ring: rgba(79, 70, 229, 0.15);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -6px rgba(0, 0, 0, 0.08);
+            --error: #ef4444;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --ring: rgba(129, 140, 248, 0.2);
+            --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        .ambient-blob {
+            position: fixed; width: 50vw; height: 50vw;
+            background: radial-gradient(circle, var(--ring) 0%, transparent 70%);
+            z-index: -1; filter: blur(80px); pointer-events: none;
+            transition: var(--transition);
+        }
+        .blob-1 { top: -15%; right: -10%; opacity: 0.7; }
+        .blob-2 { bottom: -15%; left: -10%; opacity: 0.5; }
+
+        h1, h2, h3 { font-weight: 800; letter-spacing: -0.02em; }
+        .hidden { display: none !important; opacity: 0; transform: translateY(10px); }
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+        
+        .card { 
+            background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); 
+            box-shadow: var(--shadow-soft); padding: 2.5rem; 
+            transition: var(--transition);
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: var(--primary-light); }
+
+        .btn { 
+            display: inline-flex; align-items: center; justify-content: center; 
+            padding: 0.8rem 1.8rem; border-radius: var(--radius-md); font-weight: 700; 
+            cursor: pointer; transition: var(--transition); 
+            border: none; font-size: 0.95rem; gap: 0.6rem;
+            position: relative; overflow: hidden;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-light); box-shadow: 0 0 20px var(--ring); }
+        
+        .btn-secondary { background: var(--text-main); color: var(--bg); }
+        .btn-secondary:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-muted); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: var(--ring); }
+
+        header { 
+            background: rgba(var(--surface), 0.7); backdrop-filter: blur(16px); 
+            border-bottom: 1px solid var(--border); padding: 1rem 0; position: sticky; top: 0; z-index: 1000;
+        }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; }
+        .nav-left { display: flex; align-items: center; gap: 1rem; }
+        .logo { font-size: 1.3rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 0.8rem; cursor: pointer; }
+        .logo-icon { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; }
+
+        .back-btn { 
+            opacity: 0; transform: translateX(-10px); pointer-events: none;
+            transition: var(--transition); display: flex; align-items: center; gap: 0.4rem;
+            font-size: 0.9rem; font-weight: 700; color: var(--primary);
+        }
+        .back-btn.visible { opacity: 1; transform: translateX(0); pointer-events: auto; }
+
+        .input-group { margin-bottom: 1.5rem; }
+        label { display: block; font-weight: 700; font-size: 0.8rem; margin-bottom: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        input, select, textarea {
+            width: 100%; padding: 0.9rem 1.2rem; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+            font-family: inherit; font-size: 1rem; transition: var(--transition); background: var(--bg); color: var(--text-main);
+        }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--ring); }
+
+        .dashboard-grid { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; margin-top: 2rem; }
+        @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+        .qr-section { background: var(--text-main); color: var(--bg); border-radius: var(--radius-lg); padding: 2rem; text-align: center; }
+        #qrcode { background: white; padding: 1rem; border-radius: var(--radius-md); display: inline-block; margin: 1rem 0; }
+
+        .stepper { display: flex; gap: 1rem; margin-bottom: 3rem; }
+        .step { flex: 1; height: 6px; border-radius: 3px; background: var(--border); }
+        .step.active { background: var(--primary); }
+        .step.completed { background: var(--success); }
+
+        .animate-up { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        #typewriter-container {
+            min-height: 3.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #typewriter-text {
+            font-size: 3.2rem;
+            line-height: 1.1;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+        .type-cursor {
+            display: inline-block;
+            width: 4px;
+            height: 2.8rem;
+            background-color: var(--primary);
+            margin-left: 6px;
+            animation: type-blink 1s infinite;
+            vertical-align: middle;
+        }
+        @keyframes type-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .theme-toggle { background: var(--border); border-radius: 30px; padding: 4px; display: flex; gap: 4px; cursor: pointer; }
+        .theme-toggle div { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 800; transition: var(--transition); }
+        .theme-toggle .active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-soft); }
+
+        .scanner-container { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; flex-direction: column; padding: 2rem; backdrop-filter: blur(8px); }
+        #reader { width: 100%; max-width: 500px; border-radius: 20px; overflow: hidden; background: white; }
+
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
+        .status-success { background: #dcfce7; color: #166534; }
+        .data-card { padding: 1.5rem; border-radius: 16px; background: var(--bg); border: 1px solid var(--border); margin-bottom: 1rem; }
+        
+        .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted); }
+        .auth-footer a { color: var(--primary); font-weight: 800; text-decoration: none; cursor: pointer; }
+        .auth-footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2"></div>
+
+    <header>
+        <div class="container nav-inner">
+            <div class="nav-left">
+                <div class="logo" onclick="showView('landing')">
+                    <div class="logo-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+                    MediConnect
+                </div>
+                <button id="global-back" class="btn btn-outline back-btn" onclick="handleBack()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m15 18-6-6 6-6"/></svg>
+                    Back
+                </button>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="theme-toggle" onclick="toggleTheme()">
+                    <div id="theme-light" class="active">Light</div>
+                    <div id="theme-dark">Dark</div>
+                </div>
+                <div id="header-user-nav" class="hidden">
+                    <button class="btn btn-primary btn-outline" style="padding: 0.5rem 1rem;" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <section id="view-landing" class="animate-up" style="display: flex; align-items: center; justify-content: center; min-height: 80vh;">
+            <div class="card" style="max-width: 750px; text-align: center;">
+                <span style="color: var(--primary); font-weight: 800; font-size: 0.8rem; letter-spacing: 0.2em; display: block; margin-bottom: 1rem;">CLINICAL GATEWAY</span>
+                <div id="typewriter-container"><span id="typewriter-text"></span><span class="type-cursor"></span></div>
+                <p style="color: var(--text-muted); margin-bottom: 3rem; font-size: 1.1rem;">Bridge the gap between patients and providers with our unified digital health record portal.</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;">
+                    <button class="btn btn-primary" onclick="showView('patient-auth')">Patient Portal</button>
+                    <button class="btn btn-secondary" onclick="showView('doctor-auth')">Doctor Portal</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-patient-auth" class="hidden animate-up" style="max-width: 480px; margin: 5rem auto;">
+            <div class="card">
+                <h2>Patient Sign In</h2>
+                <form onsubmit="handleLogin(event, 'patient')">
+                    <div class="input-group"><label>Patient Email</label><input type="email" id="p-login-email" required></div>
+                    <div class="input-group"><label>Password</label><input type="password" id="p-login-pass" required></div>
+                    <button class="btn btn-primary" style="width: 100%;">Sign In</button>
+                </form>
+                <div class="auth-footer">New here? <a onclick="showView('patient-signup')">Create a Patient Account</a></div>
+            </div>
+        </section>
+
+        <section id="view-patient-signup" class="hidden animate-up" style="max-width: 800px; margin: 3rem auto;">
+            <div class="card">
+                <div class="stepper">
+                    <div class="step active" data-step="1"></div>
+                    <div class="step" data-step="2"></div>
+                    <div class="step" data-step="3"></div>
+                    <div class="step" data-step="4"></div>
+                </div>
+                <form id="patient-signup-form" onsubmit="handlePatientRegister(event)">
+                    <div class="step-content" data-content="1">
+                        <h2>Personal Details</h2>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                            <div class="input-group" style="grid-column: span 2;"><label>Full Name</label><input type="text" id="reg-name" required placeholder="John Doe"></div>
+                            <div class="input-group"><label>Email Address</label><input type="email" id="reg-email" required placeholder="john@example.com"></div>
+                            <div class="input-group"><label>Set Password</label><input type="password" id="reg-pass" required></div>
+                        </div>
+                    </div>
+                    <div class="step-content hidden" data-content="2">
+                        <h2>Vitals & Baseline</h2>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                            <div class="input-group"><label>Height (cm)</label><input type="number" id="reg-height" placeholder="175"></div>
+                            <div class="input-group"><label>Weight (kg)</label><input type="number" id="reg-weight" placeholder="70"></div>
+                            <div class="input-group"><label>Blood Group</label><select id="reg-blood"><option>A+</option><option>B+</option><option>O+</option><option>AB+</option></select></div>
+                        </div>
+                    </div>
+                    <div class="step-content hidden" data-content="3">
+                        <h2>Medical Background</h2>
+                        <div class="input-group"><label>Known Allergies</label><input type="text" id="reg-allergies" placeholder="e.g. Peanuts"></div>
+                        <div class="input-group"><label>Current Symptoms</label><textarea id="reg-problems" rows="2"></textarea></div>
+                    </div>
+                    <div class="step-content hidden" data-content="4">
+                        <h2>Consent</h2>
+                        <div class="data-card" style="border-style: dashed;"><p>I agree to share my digital medical record with verified providers.</p></div>
+                        <label style="display: flex; gap: 1rem; cursor: pointer; text-transform: none;"><input type="checkbox" id="reg-consent" required style="width: 20px;"><span>I confirm the above details.</span></label>
+                    </div>
+                    <div id="stepper-controls" style="display: flex; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                        <button type="button" class="btn btn-outline" id="btn-prev" onclick="moveStep(-1)" style="visibility: hidden;">Previous</button>
+                        <button type="button" class="btn btn-primary" id="btn-next" onclick="moveStep(1)">Next Step</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section id="view-doctor-auth" class="hidden animate-up" style="max-width: 480px; margin: 5rem auto;">
+            <div class="card">
+                <h2>Provider Sign In</h2>
+                <form onsubmit="handleLogin(event, 'doctor')">
+                    <div class="input-group"><label>Doctor Email</label><input type="email" id="d-login-email" required></div>
+                    <div class="input-group"><label>Password</label><input type="password" id="d-login-pass" required></div>
+                    <button class="btn btn-secondary" style="width: 100%;">Access Provider Portal</button>
+                </form>
+                <div class="auth-footer">New Provider? <a onclick="showView('doctor-signup')">Register Medical License</a></div>
+            </div>
+        </section>
+
+        <section id="view-doctor-signup" class="hidden animate-up" style="max-width: 600px; margin: 3rem auto;">
+            <div class="card">
+                <h2>Medical License Registration</h2>
+                <form onsubmit="handleDoctorRegister(event)">
+                    <div class="input-group"><label>Full Professional Name</label><input type="text" id="d-reg-name" required></div>
+                    <div class="input-group"><label>License ID</label><input type="text" id="d-reg-license" required></div>
+                    <div class="input-group"><label>Official Email</label><input type="email" id="d-reg-email" required></div>
+                    <div class="input-group"><label>Set Password</label><input type="password" id="d-reg-pass" required></div>
+                    <button class="btn btn-secondary" style="width: 100%;">Submit Registration</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="view-patient-dashboard" class="hidden">
+            <div class="dashboard-grid">
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="qr-section animate-up">
+                        <h3>Identity QR</h3>
+                        <div id="qrcode"></div>
+                        <p id="p-dash-id" style="font-family: monospace; font-weight: 800; letter-spacing: 0.2em; font-size: 1.3rem;"></p>
+                    </div>
+                    <div class="card animate-up" style="padding: 2rem;">
+                        <h4 style="margin-bottom: 1.5rem; color: var(--text-muted);">PERSONAL VITALS</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem;">
+                            <div><label>Height</label><p id="p-dash-height">--</p></div>
+                            <div><label>Weight</label><p id="p-dash-weight">--</p></div>
+                            <div style="grid-column: span 2;"><label>Blood Group</label><p id="p-dash-blood" style="font-weight: 800; color: var(--error);">--</p></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="card animate-up">
+                        <h3 id="p-dash-name-display" style="margin-bottom: 1.5rem; color: var(--primary);">Patient Records</h3>
+                        <h3 style="margin-bottom: 1.5rem;">Doctor's Health Assessment</h3>
+                        <div id="p-dash-health-report" class="data-card"><p>--</p></div>
+                        <h3 style="margin-bottom: 1.5rem;">Active Medications</h3>
+                        <div id="p-dash-medications" class="data-card"><p>--</p></div>
+                        <h3 style="margin-bottom: 1.5rem;">Recent Test Reports</h3>
+                        <div id="p-dash-reports" class="data-card"><p>--</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-doctor-dashboard" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+                <h1>Clinical Registry</h1>
+                <button class="btn btn-primary" onclick="startScanner()">Scan Patient QR</button>
+            </div>
+
+            <div id="doctor-edit-section" class="card animate-up hidden" style="margin-top: 2rem; border: 2px solid var(--primary);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Updating: <span id="edit-patient-display-name" style="color: var(--primary);"></span></h3>
+                    <button class="btn btn-outline" onclick="document.getElementById('doctor-edit-section').classList.add('hidden')">Cancel</button>
+                </div>
+                <input type="hidden" id="edit-patient-id-hidden">
+                <div class="input-group">
+                    <label>Clinical Assessment & Health Report</label>
+                    <textarea id="edit-health-report" rows="4"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Active Medications</label>
+                    <textarea id="edit-medications" rows="3"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Test Reports</label>
+                    <textarea id="edit-test-reports" rows="3"></textarea>
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="submitPatientUpdate()">Save Changes</button>
+            </div>
+
+            <div class="card animate-up" style="margin-top: 2rem;">
+                <h3>Managed Patients</h3>
+                <div id="managed-patients-list" style="margin-top: 1rem;"><p>Loading...</p></div>
+            </div>
+        </section>
+
+        <div id="scanner-modal" class="scanner-container hidden"><div id="reader"></div><button class="btn btn-outline" style="margin-top: 2rem; background: white; color: black;" onclick="stopScanner()">Close Scanner</button></div>
+
+    </main>
+
+    <script>
+        // CHANGE "localhost" to your local computer's IP address (e.g., 192.168.1.5) for mobile testing
+        const NETWORK_IP = "localhost";
+        const API_URL = `http://${NETWORK_IP}:3000/api`;
+        
+        const state = { view: 'landing', viewStack: ['landing'], theme: 'light', step: 1, user: null };
+        let scanner = null;
+
+        const phrases = ["Secure Access to Medical Care.", "Digital Health Records, Simplified.", "Empowering Patients & Providers."];
+        let pIdx = 0, cIdx = 0, isDel = false;
+        function typeEffect() {
+            const cur = phrases[pIdx], el = document.getElementById('typewriter-text');
+            if(!el) return;
+            el.textContent = isDel ? cur.substring(0, cIdx--) : cur.substring(0, cIdx++);
+            if(!isDel && cIdx > cur.length) { isDel = true; setTimeout(typeEffect, 2000); }
+            else if(isDel && cIdx < 0) { isDel = false; pIdx = (pIdx+1)%phrases.length; setTimeout(typeEffect, 500); }
+            else setTimeout(typeEffect, isDel ? 50 : 100);
+        }
+
+        function showView(viewId, isBack = false) {
+            if (!isBack && state.view !== viewId) state.viewStack.push(viewId);
+            document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+            const v = document.getElementById(`view-${viewId}`);
+            if (v) v.classList.remove('hidden');
+            state.view = viewId;
+            document.getElementById('global-back').classList.toggle('visible', state.view !== 'landing');
+            
+            // Logic to show/hide logout button based on dashboard state
+            document.getElementById('header-user-nav').classList.toggle('hidden', !state.view.includes('dashboard'));
+            window.scrollTo(0,0);
+        }
+
+        function handleBack() { if (state.viewStack.length > 1) { state.viewStack.pop(); showView(state.viewStack[state.viewStack.length - 1], true); } }
+        function toggleTheme() {
+            state.theme = state.theme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', state.theme);
+            document.getElementById('theme-light').classList.toggle('active', state.theme === 'light');
+            document.getElementById('theme-dark').classList.toggle('active', state.theme === 'dark');
+        }
+
+        function moveStep(delta) {
+            const n = state.step + delta;
+            if (n > 4) { handlePatientRegister(new Event('submit')); return; }
+            if (n < 1) return;
+            document.querySelectorAll('#patient-signup-form input, select, textarea').forEach(el => el.required = false);
+            document.querySelectorAll('.step-content').forEach(c => c.classList.add('hidden'));
+            const cur = document.querySelector(`.step-content[data-content="${n}"]`);
+            cur.classList.remove('hidden');
+            if(n === 1) { document.getElementById('reg-name').required = true; document.getElementById('reg-email').required = true; }
+            if(n === 4) document.getElementById('reg-consent').required = true;
+            document.querySelectorAll('.step').forEach(s => { 
+                const i = parseInt(s.dataset.step); 
+                s.classList.toggle('active', i === n); 
+                s.classList.toggle('completed', i < n); 
+            });
+            document.getElementById('btn-prev').style.visibility = n === 1 ? 'hidden' : 'visible';
+            document.getElementById('btn-next').textContent = n === 4 ? 'Complete Registration' : 'Next Step';
+            state.step = n;
+        }
+
+        async function handleLogin(e, role) {
+            e.preventDefault();
+            const email = document.getElementById(role === 'patient' ? 'p-login-email' : 'd-login-email').value;
+            const password = document.getElementById(role === 'patient' ? 'p-login-pass' : 'd-login-pass').value;
+            try {
+                const res = await fetch(`${API_URL}/auth/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password, role }) });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.msg);
+                localStorage.setItem("token", data.token);
+                if (role === 'patient') renderPatientDashboard(data.user);
+                else { showView('doctor-dashboard'); loadManagedPatients(); }
+            } catch (err) { alert(err.message); }
+        }
+
+        async function handlePatientRegister(e) {
+            if (e) e.preventDefault();
+            const payload = {
+                name: document.getElementById('reg-name').value,
+                email: document.getElementById('reg-email').value,
+                password: document.getElementById('reg-pass').value,
+                height: document.getElementById('reg-height').value,
+                weight: document.getElementById('reg-weight').value,
+                blood: document.getElementById('reg-blood').value
+            };
+            try {
+                const res = await fetch(`${API_URL}/auth/register/patient`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.msg);
+                alert("Success! ID: " + data.patientId);
+                showView('patient-auth');
+            } catch (err) { alert(err.message); }
+        }
+
+        async function handleDoctorRegister(e) {
+            e.preventDefault();
+            const payload = { name: document.getElementById('d-reg-name').value, licenseId: document.getElementById('d-reg-license').value, email: document.getElementById('d-reg-email').value, password: document.getElementById('d-reg-pass').value };
+            try {
+                const res = await fetch(`${API_URL}/auth/register/doctor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                if (!res.ok) throw new Error("Failed");
+                showView('doctor-auth');
+            } catch (err) { alert(err.message); }
+        }
+
+        function renderPatientDashboard(user) {
+            showView('patient-dashboard');
+            // Standard mapping of JSON data to UI text elements
+            document.getElementById('p-dash-name-display').textContent = `Patient: ${user.name}`;
+            document.getElementById('p-dash-id').textContent = user.patientId;
+            document.getElementById('p-dash-height').textContent = (user.height || '--') + ' cm';
+            document.getElementById('p-dash-weight').textContent = (user.weight || '--') + ' kg';
+            document.getElementById('p-dash-blood').textContent = user.blood || '--';
+            
+            document.getElementById('p-dash-health-report').innerHTML = `<p>${user.healthReport || "No assessment on file."}</p>`;
+            document.getElementById('p-dash-medications').innerHTML = `<p>${user.medications || "No active prescriptions."}</p>`;
+            document.getElementById('p-dash-reports').innerHTML = `<p>${user.testReports || "No recent results."}</p>`;
+            
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById('qrcode'), { text: user.patientId, width: 160, height: 160 });
+        }
+
+        async function loadManagedPatients() {
+            try {
+                const token = localStorage.getItem("token");
+                const res = await fetch(`${API_URL}/doctor/patients`, { headers: { "Authorization": token } });
+                const patients = await res.json();
+                const list = document.getElementById('managed-patients-list');
+                if (!patients || patients.length === 0) { list.innerHTML = "<p>Empty</p>"; return; }
+                list.innerHTML = patients.map(p => `
+                    <div class="data-card" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div><strong>${p.name}</strong><br><small>${p.patientId}</small></div>
+                        <button class="btn btn-outline" onclick="loadPatientForDoctor('${p.patientId}')">Edit Records</button>
+                    </div>
+                `).join('');
+            } catch (err) { console.error(err); }
+        }
+
+        async function startScanner() {
+            document.getElementById('scanner-modal').classList.remove('hidden');
+            if (!scanner) scanner = new Html5Qrcode("reader");
+            try { 
+                await scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => { 
+                    stopScanner();
+                    let pid = text;
+                    // Detect ID if text contains URL parameter ?id=
+                    if (text.includes('id=')) {
+                        pid = new URLSearchParams(text.split('?')[1]).get('id');
+                    }
+                    // Fetch standard data and show in portal view
+                    fetchAndShowPatientInPortal(pid);
+                }); 
+            } catch (err) { console.error(err); }
+        }
+
+        async function fetchAndShowPatientInPortal(pid) {
+            try {
+                // Hits the public patient API endpoint
+                const res = await fetch(`${API_URL}/patient/public/${pid}`);
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.msg);
+                
+                // Map patient JSON to the standard portal text format
+                renderPatientDashboard(data);
+            } catch (err) { alert("Scanner fetch failed: " + err.message); }
+        }
+
+        async function loadPatientForDoctor(pid) {
+            try {
+                const res = await fetch(`${API_URL}/patient/public/${pid}`);
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.msg);
+                
+                const section = document.getElementById('doctor-edit-section');
+                section.classList.remove('hidden');
+                
+                document.getElementById('edit-patient-display-name').textContent = data.name;
+                document.getElementById('edit-patient-id-hidden').value = data._id;
+                document.getElementById('edit-health-report').value = data.healthReport || "";
+                document.getElementById('edit-medications').value = data.medications || "";
+                document.getElementById('edit-test-reports').value = data.testReports || "";
+                
+                section.scrollIntoView({ behavior: 'smooth' });
+            } catch (err) { alert("Error loading patient records"); }
+        }
+
+        async function submitPatientUpdate() {
+            const id = document.getElementById('edit-patient-id-hidden').value;
+            const payload = { 
+                healthReport: document.getElementById('edit-health-report').value, 
+                medications: document.getElementById('edit-medications').value, 
+                testReports: document.getElementById('edit-test-reports').value 
+            };
+            try {
+                const token = localStorage.getItem("token");
+                const res = await fetch(`${API_URL}/doctor/patient/${id}`, { 
+                    method: "PUT", 
+                    headers: { "Content-Type": "application/json", "Authorization": token }, 
+                    body: JSON.stringify(payload) 
+                });
+                if (!res.ok) throw new Error("Update failed");
+                alert("Success! Medical record updated and synced.");
+                document.getElementById('doctor-edit-section').classList.add('hidden');
+                loadManagedPatients();
+            } catch (err) { alert(err.message); }
+        }
+
+        async function stopScanner() { if (scanner) await scanner.stop(); document.getElementById('scanner-modal').classList.add('hidden'); }
+        function logout() { localStorage.clear(); location.reload(); }
+        window.onload = () => { showView('landing'); typeEffect(); };
+    </script>
+</body>
+</html>

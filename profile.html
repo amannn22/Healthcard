@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Record</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        .card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+        h2 { color: #4f46e5; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Patient Medical Record</h2>
+        <div id="content">Loading details...</div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+const patientId = urlParams.get('id');
+
+// MUST match the IP used in generateQR.js and index.html
+const API_URL = "http://192.168.1.5:3000/api";
+
+async function loadData() {
+    try {
+        // This calls the public route you defined in patient.routes.js
+        const res = await fetch(`${API_URL}/patient/public/${patientId}`);
+        const data = await res.json();
+        
+        if (res.ok) {
+            document.getElementById('content').innerHTML = `
+                <p><strong>Name:</strong> ${data.name}</p>
+                <p><strong>Health Report:</strong> ${data.healthReport || 'No records'}</p>
+                <p><strong>Medications:</strong> ${data.medications || 'None'}</p>
+                <p><strong>Test Reports:</strong> ${data.testReports || 'None'}</p>
+            `;
+        } else {
+            document.getElementById('content').textContent = "Patient record not found.";
+        }
+    } catch (err) {
+        document.getElementById('content').textContent = "Connection error. Ensure your phone is on the same Wi-Fi.";
+    }
+}
+if(patientId) loadData();
+    </script>
+</body>
+</html>
