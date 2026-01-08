@@ -20,7 +20,11 @@
 const patientId = urlParams.get('id');
 
 // MUST match the IP used in generateQR.js and index.html
-const API_URL = "http://192.168.1.5:3000/api";
+// Change this:
+// const API_URL = "http://192.168.1.5:3000/api";
+
+// To this:
+const API_URL = `${window.location.origin}/api`;
 
 async function loadData() {
     try {

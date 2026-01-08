@@ -1,27 +1,30 @@
 const express = require("express");
 const cors = require("cors");
+const dotenv = require("dotenv");
 const path = require("path");
-require("dotenv").config();
+const connectDB = require("./db"); // Uses your db.js
 
-const connectDB = require("./config/db");
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-app.use(express.static(path.join(__dirname, "../"))); 
-
+dotenv.config();
 connectDB();
 
-app.use("/api/auth", require("./routes/auth.routes"));
-app.use("/api/doctor", require("./routes/doctor.routes"));
-app.use("/api/patient", require("./routes/patient.routes"));
+const app = express();
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "../index.html"));
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "./"))); // Serves index.html and profile.html
+
+// Routes
+app.use("/api/auth", require("./auth.routes"));
+app.use("/api/patient", require("./patient.routes"));
+app.use("/api/doctor", require("./doctor.routes"));
+
+// UptimeRobot Ping Route
+app.get("/ping", (req, res) => {
+  res.status(200).send("Server Active");
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`MediConnect running at http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
